@@ -1,0 +1,147 @@
+<!-- If key is not existing -->
+<div ng-hide="keyExist" class="container">
+    <div class="row m-b-20">
+        <div class="col-md-12">
+            <div class="panel panel-default large-font">
+                <div class="panel-body monts add-key" style="position: relative; text-align: center">
+                    <div><strong>You have not linked an AWS key to your TrackIt account.</strong></div>
+                    <button ui-sref="app.keyselect" class="btn">
+                        <i class="fa fa-plus"></i> Enter your AWS Key
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- If key exists but have not been selected -->
+<div ng-hide="keySelected" class="container">
+    <div class="row m-b-20">
+        <div class="col-md-12">
+            <div class="panel panel-default large-font">
+                <div class="panel-body monts add-key" style="position: relative; text-align: center">
+                    <div><strong>You have not selected an AWS key to your TrackIt account.</strong></div>
+                    <button ui-sref="app.keyselect" class="btn">
+                        Select your AWS Key
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- If data are here -->
+<div ng-show="showData" class="container">
+
+    <!--<div class="row m-b-20">
+        <div class="col-md-6">
+            <div class="panel panel-default large-font">
+                <div class="panel-body monts current-key" style="position: relative;">
+                    <strong>AWS KEY : </strong><span>{{keyPair.pretty}} [ {{keyPair.key}} ]</span>
+                    <button ui-sref="app.keyselect" style="top: 15px">Change</button>
+                </div>
+            </div>
+        </div>
+    </div>-->
+
+    <!-- Data are loaded-->
+    <div class="row m-b-20">
+
+        <!-- Pie chart for detailed month bill, see BillsCtrl for logic-->
+        <div class="col-md-4">
+            <ng-include src="'components/home/bills/billsPieView.html'"></ng-include>
+        </div>
+
+        <!-- Pie chart for global monthly bill, see BillsCtrl for logic-->
+        <div class="col-md-8">
+            <ng-include src="'components/home/bills/billsBarsView.html'"></ng-include>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <uib-tabset active="breakdownActive">
+                <uib-tab index="1" select="breakdownActive = 1" ng-if="awsSelectedKey">
+                    <uib-tab-heading>
+                        <img class="provider-icon" src="img/s3-square.png" alt=""> AWS COST BREAKDOWN
+                    </uib-tab-heading>
+                    <div class="panel panel-default" ng-controller="BreakdownCtrl" ng-if="breakdownActive == 1">
+                        <div class="panel-body">
+                          <md-tabs md-dynamic-height="true" md-selected="1">
+                            <md-tab label="3 days">
+                              <!-- NVD3 Chart -->
+                              <nvd3 options="optionsDailyChart" data="dailyData3Days" api="api" ng-if="dailyData3Days"></nvd3>
+                              <p style="text-align: center" ng-show="aws3DaysCostBreakdownNoDataMessage">{{aws3DaysCostBreakdownNoDataMessage}}</p>
+                            </md-tab>
+                            <md-tab label="30 days">
+                              <!-- NVD3 Chart -->
+                              <nvd3 options="optionsDailyChart" data="dailyData30Days" api="api" ng-if="dailyData30Days"></nvd3>
+                              <p style="text-align: center" ng-show="aws30DaysCostBreakdownNoDataMessage">{{aws30DaysCostBreakdownNoDataMessage}}</p>
+                            </md-tab>
+                            <md-tab label="12 months">
+                              <!-- NVD3 Chart -->
+                              <nvd3 options="optionsMonthlyChart" data="monthlyData12Months" api="api" ng-if="monthlyData12Months"></nvd3>
+                              <p style="text-align: center" ng-show="aws12MonthsCostBreakdownNoDataMessage">{{aws12MonthsCostBreakdownNoDataMessage}}</p>
+                            </md-tab>
+                          </md-tabs>
+                        </div>
+                    </div>
+                </uib-tab>
+                <uib-tab index="2" select="breakdownActive = 2" ng-if="gcSelectedKey">
+                    <uib-tab-heading>
+                        <img class="provider-icon" src="img/gc-square.png" alt=""> GCP COST BREAKDOWN
+                    </uib-tab-heading>
+                    <div class="panel panel-default" ng-controller="GCBreakdownCtrl" ng-if="breakdownActive == 2">
+                        <div class="panel-body">
+                            <!-- NVD3 Chart -->
+                            <nvd3 options="options" data="data" api="api"></nvd3>
+                        </div>
+                    </div>
+                </uib-tab>
+                <uib-tab index="3" select="breakdownActive = 3" ng-if="gcSelectedKey">
+                    <uib-tab-heading>
+                        <img class="provider-icon" src="img/gc-square.png" alt=""> GCP COST BY PROJECT
+                    </uib-tab-heading>
+                    <div class="panel panel-default" ng-controller="GCCostProjectCtrl" ng-if="breakdownActive == 3">
+                        <div class="panel-body">
+                            <div class="spinner" ng-show="!dataLoaded">
+                                <div class="rect1"></div>
+                                <div class="rect2"></div>
+                                <div class="rect3"></div>
+                                <div class="rect4"></div>
+                                <div class="rect5"></div>
+                            </div>
+                            <div ng-show="dataLoaded">
+                                <div class="col-md-3" style="padding-top: 25px;">
+                                    <md-input-container style="display:block;">
+                                        <label style="font-size: 24px;">Select a month :</label>
+                                        <md-select ng-model="selectedMonth" placeholder="Select a month">
+                                            <md-option ng-value="month" ng-repeat="month in months">{{ month.month }}</md-option>
+                                        </md-select>
+                                    </md-input-container>
+                                </div>
+                                <div class="col-md-4" ng-if="selectedMonth">
+                                    <h4>Total cost : <span class="pull-right">{{selectedMonth.total | currency}}</span></h4>
+                                    <md-divider></md-divider>
+                                    <md-list style="max-height:300px; overflow-y: scroll;">
+                                        <md-list-item class="md-2-line" ng-repeat="item in selectedMonth.projects">
+                                            <div class="md-list-item-text">
+                                                <h3 class="pull-left"><i class="fa fa-server"></i> {{item.project}}</h3>
+                                                <h3 class="pull-right"><strong>{{item.cost | currency}}</strong></h3>
+                                            </div>
+                                        </md-list-item>
+                                    </md-list>
+                                </div>
+                                <div class="col-md-5">
+                                    <!-- NVD3 Chart -->
+                                    <nvd3 options="options" data="data" api="api"></nvd3>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </uib-tab>
+            </uib-tabset>
+        </div>
+    </div>
+</div>

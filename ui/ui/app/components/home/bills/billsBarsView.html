@@ -1,0 +1,21 @@
+<div ng-controller="BillsCtrl">
+	<uib-tabset active="billBarsActive">
+		<uib-tab index="1" select="billBarsActive = 1">
+			<uib-tab-heading>
+				<i class="fa fa-server"></i> MONTHLY BILLS
+			</uib-tab-heading>
+			<div class="panel panel-default" ng-if="billBarsActive == 1">
+				<div class="panel-body">
+					<nvd3 options="monthsBarsOptions" data="monthsBarsData" api="monthsAPI" ng-if="monthsBarsIsLoaded"></nvd3>
+					<div class="spinner" ng-show="!monthsBarsIsLoaded">
+						<div class="rect1"></div>
+						<div class="rect2"></div>
+						<div class="rect3"></div>
+						<div class="rect4"></div>
+						<div class="rect5"></div>
+					</div>
+				</div>
+			</div>
+		</uib-tab>
+	</uib-tabset>
+</div>
